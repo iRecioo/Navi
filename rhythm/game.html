@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; worker-src 'self'; base-uri 'none'">
+  <title>Navi · Ritmo</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="game-core.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main id="game">
+    <header>
+      <img src="../assets/navi-aleteo.gif" alt="Navi">
+      <div><h1 id="title"></h1><p id="artist"></p></div>
+      <div class="totals"><span id="score">0 pts</span><span id="misses">0 fallos</span></div>
+    </header>
+    <section id="field" aria-label="Cuatro carriles">
+      <div class="lane"><span class="receptor">▼</span><kbd>A</kbd></div>
+      <div class="lane"><span class="receptor">▼</span><kbd>S</kbd></div>
+      <div class="lane"><span class="receptor">▼</span><kbd>K</kbd></div>
+      <div class="lane"><span class="receptor">▼</span><kbd>L</kbd></div>
+      <p id="combo" aria-label="Combo"></p>
+      <p id="judgement" role="status"></p>
+      <div id="message" role="status">Dame un momento…</div>
+      <button id="open-spotify" type="button" hidden>Abrir playlist en Spotify</button>
+      <button id="focus-game" type="button" hidden>Haz clic para jugar</button>
+    </section>
+    <footer><progress id="progress" max="1" value="0" aria-label="Progreso de la canción"></progress><span>Esc · Salir</span></footer>
+  </main>
+</body>
+</html>

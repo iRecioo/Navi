@@ -1,0 +1,10 @@
+Piper 1.4.1, código GPL-3.0
+https://github.com/OHF-Voice/piper1-gpl/tree/v1.4.1
+El paquete oficial de Windows x64 incluye eSpeak NG y sus datos.
+Las licencias y avisos vienen en python/site-packages/piper_tts-1.4.1.dist-info/.
+
+Voz es_ES-sharvard-medium, locutora F, Piper Voices
+https://huggingface.co/rhasspy/piper-voices/tree/375a0fe641dea077c2a47b4e9a056d6da521eed3/es/es_ES/sharvard/medium
+El conjunto de datos SHARVARD es de la Universidad de Edimburgo, CC BY 3.0.
+https://datashare.ed.ac.uk/handle/10283/574
+El runtime incluye CPython, NumPy, ONNX Runtime y sus respectivas licencias.

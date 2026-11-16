@@ -1,0 +1,205 @@
+diff --git a/ggml/src/ggml-vulkan/ggml-vulkan.cpp b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+index c9f906d..e6abe72 100644
+--- a/ggml/src/ggml-vulkan/ggml-vulkan.cpp
++++ b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+@@ -1,3 +1,4 @@
++#include <atomic>
+ #include "ggml-vulkan.h"
+ #include <vulkan/vulkan_core.h>
+ #if defined(GGML_VULKAN_RUN_TESTS) || defined(GGML_VULKAN_CHECK_RESULTS)
+diff --git a/src/llama-context.cpp b/src/llama-context.cpp
+index e6bf97a..16c0bde 100644
+--- a/src/llama-context.cpp
++++ b/src/llama-context.cpp
+@@ -1,3 +1,4 @@
++#include <cstdlib>
+ #include "llama-context.h"
+ 
+ #include "ggml.h"
+diff --git a/src/llama-moe-slot.cpp b/src/llama-moe-slot.cpp
+index 7827ebc..2dbf3f2 100644
+--- a/src/llama-moe-slot.cpp
++++ b/src/llama-moe-slot.cpp
+@@ -28,6 +28,7 @@
+ #ifdef _WIN32
+ #include <fcntl.h>
+ #include <io.h>
++struct iovec { void * iov_base; size_t iov_len; };
+ #else
+ #include <fcntl.h>
+ #include <sys/uio.h>
+diff --git a/tools/omni/voxcpm2/voxcpm2_runtime.cpp b/tools/omni/voxcpm2/voxcpm2_runtime.cpp
+index 1360ccd..eefcc28 100644
+--- a/tools/omni/voxcpm2/voxcpm2_runtime.cpp
++++ b/tools/omni/voxcpm2/voxcpm2_runtime.cpp
+@@ -699,8 +699,13 @@ void VoxCPM2Runtime::set_n_threads(int n_threads) {
+     if (base_lm.ctx) {
+         llama_set_n_threads(base_lm.ctx, n_threads, n_threads);
+     }
+-    if (backend && ggml_backend_is_cpu(backend)) {
+-        ggml_backend_cpu_set_n_threads(backend, n_threads);
++    if (backend) {
++        auto * reg = ggml_backend_dev_backend_reg(ggml_backend_get_device(backend));
++        if (reg) {
++            auto set_threads = reinterpret_cast<ggml_backend_set_n_threads_t>(
++                ggml_backend_reg_get_proc_address(reg, "ggml_backend_set_n_threads"));
++            if (set_threads) set_threads(backend, n_threads);
++        }
+     }
+ }
+ 
+@@ -1469,6 +1474,9 @@ std::vector<float> VoxCPM2Runtime::encode_reference_audio(const std::vector<floa
+         return {};
+     }
+ 
++    if (cached_reference_sample_rate == sample_rate && cached_reference_wav == reference_wav) {
++        return cached_reference_features;
++    }
+     const int          actual_sample_rate = sample_rate > 0 ? sample_rate : audio_vae.config.sample_rate;
+     std::vector<float> audio = resample_mono_linear(reference_wav, actual_sample_rate, audio_vae.config.sample_rate);
+     const int          audio_patch_len = patch_size() * audio_vae.config.hop_length();
+@@ -1534,6 +1542,9 @@ std::vector<float> VoxCPM2Runtime::encode_reference_audio(const std::vector<floa
+ 
+     auto result = tensor_to_vector(patch_major);
+     ggml_gallocr_free(galloc);
++    cached_reference_sample_rate = sample_rate;
++    cached_reference_wav = reference_wav;
++    cached_reference_features = result;
+     return result;
+ }
+ 
+@@ -1810,7 +1821,7 @@ std::vector<float> VoxCPM2Runtime::generate_with_continuation(const std::string
+     // Tokenize the CONCATENATED string (prompt_text + target_text) ONCE so that
+     // CJK multi-char expansion applies to the joined string — do NOT tokenize the
+     // two strings separately and concatenate token ids.
+-    const std::string    joined_text = prompt_text + target_text;
++    const std::string    joined_text = prompt_text + " " + target_text;
+     std::vector<int32_t> token_ids   = tokenize_text(joined_text, false, true);
+     if (token_ids.empty()) {
+         if (last_error_msg.empty()) {
+@@ -1982,7 +1993,7 @@ bool VoxCPM2Runtime::generate_with_continuation_streaming(const std::string &
+                                                           const VoxCPM2GenerateParams &     params) {
+     clear_error();
+     // Same tokenize-once rule as generate_with_continuation (CJK expansion on joined string).
+-    const std::string    joined_text = prompt_text + target_text;
++    const std::string    joined_text = prompt_text + " " + target_text;
+     std::vector<int32_t> token_ids   = tokenize_text(joined_text, false, true);
+     if (token_ids.empty()) {
+         if (last_error_msg.empty()) {
+@@ -2011,6 +2022,9 @@ bool VoxCPM2Runtime::generate_with_continuation_streaming(const std::string &
+ }
+ 
+ void VoxCPM2Runtime::free() {
++    cached_reference_wav.clear();
++    cached_reference_features.clear();
++    cached_reference_sample_rate = 0;
+     cached_front_half.free_graph();
+     reset_state();
+     audio_vae.free();
+diff --git a/tools/omni/voxcpm2/voxcpm2_runtime.h b/tools/omni/voxcpm2/voxcpm2_runtime.h
+index bb0cc6f..e9e099a 100644
+--- a/tools/omni/voxcpm2/voxcpm2_runtime.h
++++ b/tools/omni/voxcpm2/voxcpm2_runtime.h
+@@ -198,6 +198,9 @@ struct VoxCPM2Runtime {
+     bool                                              state_ready         = false;
+     bool                                              tokenizer_available = false;
+     float                                             embedding_scale     = 12.0f;
++    std::vector<float> cached_reference_wav;
++    std::vector<float> cached_reference_features;
++    int cached_reference_sample_rate = 0;
+     std::string                                       last_error_msg;
+     std::mt19937                                      rng;
+     std::unordered_map<int32_t, std::vector<int32_t>> cjk_split_map;
+diff --git a/tools/server/server-voxcpm2.cpp b/tools/server/server-voxcpm2.cpp
+index 6d22e47..3fdf20b 100644
+--- a/tools/server/server-voxcpm2.cpp
++++ b/tools/server/server-voxcpm2.cpp
+@@ -13,6 +13,7 @@
+ #include <memory>
+ #include <string>
+ #include <cstring>
++#include <cstdlib>
+ #include <atomic>
+ #include <signal.h>
+ 
+@@ -227,6 +228,20 @@ int main(int argc, char ** argv) {
+     }
+     auto & svr = *server;
+ 
++    const char * token = std::getenv("NAVI_TTS_TOKEN");
++    if (!token || !*token || params.hostname != "127.0.0.1") {
++        LOG_ERR("Navi TTS requires a token and a loopback address.\n");
++        return 1;
++    }
++    const std::string expected_auth = std::string("Bearer ") + token;
++    svr.set_pre_routing_handler([&expected_auth](const httplib::Request & req, httplib::Response & res) {
++        if (req.get_header_value("Authorization") != expected_auth) {
++            res.status = 401;
++            return httplib::Server::HandlerResponse::Handled;
++        }
++        return httplib::Server::HandlerResponse::Unhandled;
++    });
++
+     llama_backend_init();
+     llama_numa_init(params.numa);
+ 
+@@ -251,45 +266,10 @@ int main(int argc, char ** argv) {
+     // ── POST /v1/voxcpm2/init ─────────────────────────────────────────────
+ 
+     svr.Post("/v1/voxcpm2/init", [&](const httplib::Request & req, httplib::Response & res) {
+-        LOG_INF("handle_voxcpm2_init\n");
+-        json data = json::parse(req.body);
+-
+-        std::string base_lm = json_value(data, "base_lm", std::string(""));
+-        std::string acoustic = json_value(data, "acoustic", std::string(""));
+-        int n_gpu_layers = json_value(data, "n_gpu_layers", -1);
+-
+-        if (base_lm.empty() || acoustic.empty()) {
+-            res_error(res, format_error_response("\"base_lm\" and \"acoustic\" are required"));
+-            return;
+-        }
+-
+-        {
+-            std::lock_guard<std::mutex> lock(state.mutex);
+-            if (state.runtime) {
+-                state.runtime->free();
+-                delete state.runtime;
+-                state.runtime = nullptr;
+-            }
+-
+-            auto * rt = new VoxCPM2Runtime();
+-            if (!rt->init(base_lm, acoustic, n_gpu_layers, /*use_gpu_backend=*/true)) {
+-                std::string err = rt->last_error();
+-                rt->free();
+-                delete rt;
+-                res_error(res, format_error_response("VoxCPM2 init failed: " + err, "server_error"));
+-                return;
+-            }
+-            rt->set_n_threads(params.cpuparams.n_threads);
+-            state.runtime = rt;
+-        }
++        // Navi fixes the model at launch. Keep streaming handlers' runtime pointers valid.
++        res.status = 405;
++        return;
+ 
+-        json ack = {
+-            {"success", true},
+-            {"base_lm", base_lm},
+-            {"acoustic", acoustic},
+-            {"sample_rate", state.runtime->sample_rate()}
+-        };
+-        res_ok(res, ack);
+     });
+ 
+     // ── POST /v1/audio/speech (OpenAI-compatible) ─────────────────────────
+@@ -420,7 +400,9 @@ int main(int argc, char ** argv) {
+ 
+         res.set_chunked_content_provider(
+             "audio/wav",
+-            [rt, input, gen_params, sr, data](size_t /*offset*/, httplib::DataSink & sink) -> bool {
++            [&state, rt, input, gen_params, sr, data](size_t /*offset*/, httplib::DataSink & sink) -> bool {
++                std::lock_guard<std::mutex> lock(state.mutex);
++                if (!sink.is_writable()) return false;
+                 // Write WAV header first (with unknown data size)
+                 {
+                     std::string header;

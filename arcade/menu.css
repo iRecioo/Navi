@@ -1,0 +1,18 @@
+#arcade-choices:not([hidden]) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 6px;
+  margin: 5px 0;
+}
+#arcade-choices button {
+  min-width: 0;
+  text-align: left;
+  margin: 0;
+  padding: 4px 7px;
+  min-height: 25px;
+  font-size: 11px;
+  white-space: normal;
+  line-height: 1.2;
+}
+body[data-arcade-menu="true"] #panel { width: calc(100vw - 147px); }
+#arcade-choices button:first-child { grid-column: 1 / -1; }

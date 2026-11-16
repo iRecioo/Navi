@@ -1,0 +1,46 @@
+Navi · Instalador y actualizaciones desde GitHub
+
+Extrae este parche en tu proyecto de Navi, donde está package.json.
+Usa la carpeta completa que ya tienes en Windows con voz, Vosk,
+minijuegos y sus recursos.
+
+En PowerShell, para la primera release de este parche:
+
+  npm install
+  npm version 0.3.1 --no-git-tag-version
+  npm run build
+
+La compilación obtiene el repositorio del remoto origin de Git. Para
+usar otra ubicación de releases, sustituye propietario/repositorio:
+
+  $env:NAVI_RELEASE_REPO = "propietario/repositorio"
+  npm run build
+
+El repositorio que sirva las releases debe ser público. El código
+fuente puede vivir en un repositorio privado distinto. El destino de
+actualizaciones queda grabado en el instalador de esa compilación.
+
+En GitHub crea la release Navi 0.3.1 con el tag v0.3.1 sobre main.
+Adjunta juntos los siguientes archivos de dist/ y pulsa Publish release:
+
+  Navi-Setup-0.3.1.exe
+  Navi-Setup-0.3.1.exe.blockmap
+  latest.yml
+
+Instala esa primera versión con el EXE. Para probar la actualización,
+compila y publica la 0.3.2. En la 0.3.1 instalada, di:
+
+  «Navi, ¿tienes actualizaciones disponibles?»
+  «Navi, actualízate»
+
+El bocadillo muestra el progreso de descarga. Navi se cierra para
+instalar la actualización y el instalador vuelve a abrirla. También
+puedes usar las opciones de actualización de la bandeja.
+«Navi, ciérrate» cierra la aplicación. «Navi, para» conserva su función
+de parar la conversación o silenciar la alarma.
+
+Configura la clave de OpenAI en los ajustes de Navi una vez instalada.
+Si el archivo antiguo openai-config.cjs contenía tu clave y ya lo
+subiste a GitHub, revócala y genera otra. Si el archivo ya está
+rastreado, usa git rm --cached -- openai-config.cjs para sacarlo del
+siguiente commit sin borrarlo de tu PC.

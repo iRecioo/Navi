@@ -1,0 +1,32 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('navi', {
+  status: () => ipcRenderer.invoke('navi:status'),
+  voiceQuit: () => ipcRenderer.send('navi:voice-quit'),
+  onUpdateState: callback => ipcRenderer.on('navi:update-state', (_event, state) => callback(state)),
+  ask: text => ipcRenderer.invoke('navi:ask', text),
+  synthesize: (id, text, bySentence = false) => ipcRenderer.invoke('navi:synthesize', { id, text, bySentence }),
+  onVoiceSentence: callback => ipcRenderer.on('navi:voice-sentence', (_event, id, part) => callback(id, part)),
+  waitingCue: () => ipcRenderer.invoke('navi:waiting-cue'),
+  stopSynthesis: id => ipcRenderer.send('navi:stop-synthesis', id),
+  voicePlayback: stats => ipcRenderer.send('navi:voice-playback', stats),
+  openSource: url => ipcRenderer.invoke('navi:open-source', url),
+  audio: (audio, format) => ipcRenderer.invoke('navi:audio', { audio, format }),
+  wake: () => ipcRenderer.invoke('navi:wake'),
+  wakeStatus: (state, detail) => ipcRenderer.send('navi:wake-status', state, detail),
+  pasteKey: () => ipcRenderer.invoke('navi:paste-key'),
+  saveKey: key => ipcRenderer.invoke('navi:save-key', key),
+  dismiss: () => ipcRenderer.send('navi:dismiss'),
+  dismissAlarm: () => ipcRenderer.send('navi:dismiss-alarm'),
+  startRhythm: () => ipcRenderer.invoke('navi:start-rhythm'),
+  onRhythmRequest: callback => ipcRenderer.on('navi:rhythm-request', (_event, spotify) => callback(spotify === true)),
+  onRhythmStarted: callback => ipcRenderer.on('navi:rhythm-started', () => callback()),
+  onRhythmResult: callback => ipcRenderer.on('navi:rhythm-result', (_event, text, ended, alreadySpoken) => callback(text, ended, alreadySpoken)),
+  onActivate: callback => ipcRenderer.on('navi:activate', (_event, view) => callback(view)),
+  onAlarm: callback => ipcRenderer.on('navi:alarm', (_event, message) => callback(message)),
+  onWakeEnabled: callback => ipcRenderer.on('navi:wake-enabled', (_event, enabled) => callback(enabled)),
+  onWakeRestart: callback => ipcRenderer.on('navi:wake-restart', () => callback()),
+  onPlacement: callback => ipcRenderer.on('navi:placement', (_event, placement) => callback(placement)),
+  onCursorCue: callback => ipcRenderer.on('navi:cursor-cue', () => callback()),
+  onHide: callback => ipcRenderer.on('navi:hide', () => callback())
+});

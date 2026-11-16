@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src blob:; base-uri 'none'; form-action 'none'">
+  <title>Navi · Minijuegos</title>
+  <link rel="stylesheet" href="arcade.css">
+  <script src="game-core.js" defer></script>
+  <script src="arcade.js" defer></script>
+</head>
+<body>
+  <main id="arcade">
+    <header>
+      <img id="fairy" src="../assets/navi-aleteo.gif" alt="Navi">
+      <h1 id="title"></h1>
+      <button id="close" type="button" aria-label="Salir del juego">Esc · Salir</button>
+    </header>
+    <section id="stage" aria-label="Partida"></section>
+    <footer>
+      <p id="status" role="status"></p>
+      <button id="continue" type="button" hidden>Volver a Navi</button>
+    </footer>
+  </main>
+</body>
+</html>

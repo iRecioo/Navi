@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; media-src 'self' blob:; base-uri 'none'; form-action 'none'">
+  <title>Navi</title>
+  <link rel="stylesheet" href="overlay.css">
+  <link rel="stylesheet" href="arcade/menu.css">
+  <link rel="stylesheet" href="update.css">
+  <script src="vendor/vosk.js" defer></script>
+  <script src="wake.js" defer></script>
+  <script src="flight.js" defer></script>
+  <script src="overlay.js" defer></script>
+</head>
+<body data-state="idle" data-view="idle">
+  <div id="fairy-trail" aria-hidden="true"><div id="fairy-sparks"></div></div>
+  <div id="fairy" aria-hidden="true">
+    <picture>
+      <source media="(prefers-reduced-motion: reduce)" srcset="assets/navi.png">
+      <img src="assets/navi-aleteo.gif" alt="">
+    </picture>
+  </div>
+  <section id="panel" hidden aria-label="Asistente Navi">
+    <header aria-label="Controles">
+      <button type="button" id="close" class="quiet" aria-label="Cerrar panel">✕</button>
+    </header>
+    <div id="request">
+      <p id="reply" aria-hidden="true">¿En qué te ayudo?</p>
+      <p id="reply-status" class="screen-reader" role="status"></p>
+      <div id="update-progress" hidden>
+        <progress id="update-bar" max="100" aria-label="Progreso de la actualización"></progress>
+        <span id="update-percent" aria-hidden="true"></span>
+      </div>
+      <div id="arcade-choices" hidden role="group" aria-label="Minijuegos"></div>
+      <footer id="rhythm-confirmation" hidden>
+        <button type="button" id="rhythm-yes">Jugar</button>
+        <button type="button" id="rhythm-no" class="quiet">Cancelar</button>
+      </footer>
+      <p id="sources" hidden aria-label="Fuentes de la respuesta"></p>
+      <p id="voice-status" hidden></p>
+      <form id="command-form" hidden>
+        <input id="command" type="text" maxlength="1400" aria-label="Petición para Navi" placeholder="Escribe una petición…" autocomplete="off">
+        <button id="send" type="submit" aria-label="Enviar petición">➜</button>
+      </form>
+      <footer id="request-controls" hidden>
+        <button type="button" id="mic">Hablar</button>
+        <button type="button" id="settings-link" class="quiet">Configurar IA</button>
+      </footer>
+    </div>
+    <form id="settings" hidden>
+      <label for="api-key">Clave de API de OpenAI</label>
+      <p id="key-note">Activa el micrófono y la conversación. La clave se guarda cifrada en este ordenador.</p>
+      <div class="key-field">
+        <input id="api-key" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false" maxlength="510">
+        <button type="button" id="paste-key" class="quiet">Pegar</button>
+      </div>
+      <p id="key-status" role="status"></p>
+      <footer>
+        <button type="submit" id="save-key">Guardar</button>
+        <button type="button" id="remove-key" class="quiet">Quitar clave local</button>
+        <button type="button" id="back" class="quiet">Volver</button>
+      </footer>
+    </form>
+    <div id="alarm" hidden>
+      <p id="alarm-message" role="alert"></p>
+      <p id="alarm-voice" hidden>Di «Navi, para», «Para, Navi» o «Navi, ya lo escuché».</p>
+      <button type="button" id="stop-alarm">Entendido</button>
+    </div>
+  </section>
+  <audio id="chime" src="assets/chime.wav" preload="auto" loop></audio>
+</body>
+</html>

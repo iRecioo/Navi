@@ -1,0 +1,19 @@
+#update-progress:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+  width: 100%;
+}
+#update-bar {
+  flex: 1;
+  min-width: 90px;
+  height: 9px;
+  accent-color: #a5eaff;
+}
+#update-percent {
+  white-space: nowrap;
+  color: #cfedff;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,10 @@
+MOSS-TTS-Nano · OpenMOSS Team · licencia Apache 2.0
+https://github.com/OpenMOSS/MOSS-TTS-Nano/tree/8b7bcc9341b3b4ef3a3a58ba1338a7d85ff133eb
+ort_cpu_runtime.py se incluye tal como se publicó en esa revisión.
+models.json identifica las revisiones ONNX y las sumas SHA-256.
+
+El runtime portable para Windows x64 contiene CPython 3.13.13, ONNX Runtime
+1.32.0, NumPy 2.5.4 y SentencePiece 0.2.3. Las licencias de estos paquetes
+están en python/ y python/site-packages/. Las DLL de Visual C++ proceden del
+paquete oficial Microsoft.VCLibs.x64.14.00.Desktop de Microsoft.
+https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx
